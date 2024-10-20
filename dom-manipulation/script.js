@@ -335,7 +335,7 @@ function syncQuotes(serverQuotes) {
     if (conflictQuotes.length > 0) {
         handleConflicts(conflictQuotes);
     } else {
-        showNotification("Quotes updated successfully from the server.");
+        showNotification("Quotes synced with serve!");
     }
 }
 
