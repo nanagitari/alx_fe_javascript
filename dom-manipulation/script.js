@@ -43,7 +43,7 @@ function populateCategories() {
     }
 }
 function filterQuotes(category) {
-    const quoteElement = document.getElementById('dynamicContent');
+    const quoteElement = document.getElementById('quoteDisplay');
     quoteElement.innerHTML = ''; 
 
     const filteredQuotes = category ? quotes.filter(quote => quote.category === category) : quotes;
