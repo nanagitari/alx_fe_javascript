@@ -9,28 +9,68 @@ function showRandomQuote() {
     const randomQuote = quotes[randomIndex];
 
     const quoteElement = document.getElementById('dynamicContent');
-    quoteElement.innerHTML = `<blockquote>"${randomQuote.text}"</blockquote>
-                              <p>Category: ${randomQuote.category}</p>`;
+
+    quoteElement.innerHTML = '';
+
+    const blockquote = document.createElement('blockquote');
+    blockquote.textContent = `"${randomQuote.text}"`;
+
+    const category = document.createElement('p');
+    category.textContent = `Category: ${randomQuote.category}`;
+
+    quoteElement.appendChild(blockquote);
+    quoteElement.appendChild(category);
 }
 
 function createAddQuoteForm() {
     const formContainer = document.getElementById('formContainer');
-    const formHTML = `
-        <h3>Add a New Quote</h3>
-        <form id="addQuoteForm">
-            <label for="quoteText">Quote Text:</label><br>
-            <input type="text" id="quoteText" name="quoteText" required><br><br>
 
-            <label for="quoteCategory">Category:</label><br>
-            <input type="text" id="quoteCategory" name="quoteCategory" required><br><br>
+    formContainer.innerHTML = '';
 
-            <button type="submit">Add Quote</button>
-        </form>
-    `;
+    const form = document.createElement('form');
+    form.id = 'addQuoteForm';
+
+    const labelText = document.createElement('label');
+    labelText.setAttribute('for', 'quoteText');
+    labelText.textContent = 'Quote Text:';
     
-    formContainer.innerHTML = formHTML;
+    const inputText = document.createElement('input');
+    inputText.type = 'text';
+    inputText.id = 'quoteText';
+    inputText.name = 'quoteText';
+    inputText.required = true;
 
-    document.getElementById('addQuoteForm').addEventListener('submit', function (event) {
+    const breakLine1 = document.createElement('br');
+
+    const labelCategory = document.createElement('label');
+    labelCategory.setAttribute('for', 'quoteCategory');
+    labelCategory.textContent = 'Category:';
+
+    const inputCategory = document.createElement('input');
+    inputCategory.type = 'text';
+    inputCategory.id = 'quoteCategory';
+    inputCategory.name = 'quoteCategory';
+    inputCategory.required = true;
+
+    const breakLine2 = document.createElement('br');
+
+    const submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.textContent = 'Add Quote';
+
+    form.appendChild(labelText);
+    form.appendChild(inputText);
+    form.appendChild(breakLine1);
+
+    form.appendChild(labelCategory);
+    form.appendChild(inputCategory);
+    form.appendChild(breakLine2);
+
+    form.appendChild(submitButton);
+
+    formContainer.appendChild(form);
+
+    form.addEventListener('submit', function (event) {
         event.preventDefault();
 
         const quoteText = document.getElementById('quoteText').value;
@@ -45,9 +85,12 @@ function createAddQuoteForm() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-
+    
     showRandomQuote();
+
     createAddQuoteForm();
 
     document.getElementById('showRandomQuoteBtn').addEventListener('click', showRandomQuote);
 });
+
+
