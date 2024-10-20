@@ -302,25 +302,44 @@ function fetchAndSyncQuotes() {
 
 function syncQuotes(serverQuotes) {
     const updatedQuotes = [];
+    const conflictQuotes = []; 
 
     const serverQuotesMap = new Map(serverQuotes.map(q => [q.text, q]));
 
     quotes.forEach(localQuote => {
         const serverQuote = serverQuotesMap.get(localQuote.text);
         if (serverQuote) {
-            updatedQuotes.push(serverQuote);
+        
+            if (localQuote.category !== serverQuote.category) {
+            
+                conflictQuotes.push({ local: localQuote, server: serverQuote });
+            } else {
+            
+                updatedQuotes.push(localQuote);
+            }
             serverQuotesMap.delete(localQuote.text); 
         } else {
+            
             updatedQuotes.push(localQuote);
         }
     });
 
+    
     serverQuotesMap.forEach(serverQuote => updatedQuotes.push(serverQuote));
 
+    
     quotes = updatedQuotes;
     saveQuotes(quotes);
     populateCategories(); 
+
+    if (conflictQuotes.length > 0) {
+        handleConflicts(conflictQuotes);
+    } else {
+        showNotification("Quotes updated successfully from the server.");
+    }
 }
+
+
 
 function startPollingForUpdates() {
     setInterval(fetchAndSyncQuotes, 30000); 
@@ -374,3 +393,20 @@ function resolveConflict(quoteText, choice) {
     populateCategories(); 
 }
 
+async function fetchAndSyncQuotes() {
+    try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5'); 
+        const serverData = await response.json();
+
+    
+        const serverQuotes = serverData.map(post => ({
+            text: post.title,
+            category: "Server" 
+        }));
+
+        syncQuotes(serverQuotes);
+    } catch (error) {
+        console.error('Error fetching quotes:', error);
+        showNotification("Failed to fetch quotes from the server."); 
+    }
+}
