@@ -21,7 +21,9 @@ function showRandomQuote() {
     quoteElement.appendChild(blockquote);
     quoteElement.appendChild(category);
 }
-
+function newQuote() {
+    showRandomQuote();
+}
 function createAddQuoteForm() {
     const formContainer = document.getElementById('formContainer');
 
@@ -85,7 +87,7 @@ function createAddQuoteForm() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     showRandomQuote();
 
     createAddQuoteForm();
