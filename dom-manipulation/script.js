@@ -1,8 +1,20 @@
-const quotes = [
+const defaultQuotes = [
     { text: "The only way to do great work is to always have grit.", category: "Inspiration" },
     { text: "Life is all about making memories.", category: "Life" },
     { text: "When you hit rock bottom the only way is up .", category: "Motivation" },
 ];
+function getQuotes() {
+    const storedQuotes = localStorage.getItem('quotes');
+    return storedQuotes ? JSON.parse(storedQuotes) : defaultQuotes
+
+}
+function saveQuotes(quotes) {
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+
+let quotes = getQuotes();
+
 
 function showRandomQuote() {
     const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -95,4 +107,48 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('showRandomQuoteBtn').addEventListener('click', showRandomQuote);
 });
 
+function exportQuotesAsJSON() {
+    const quotesJSON = JSON.stringify(quotes, null, 2);
 
+    const blob = new Blob([quotesJSON], { type: 'application/json' });
+
+    const link = document.createElement('a');
+    
+    link.href = URL.createObjectURL(blob);
+
+    link.download = 'quotes.json';
+
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+
+}
+document.addEventListener('DOMContentLoaded', function() {
+    
+    showRandomQuote();
+
+    createAddQuoteForm();
+
+    const showQuoteBtn = document.getElementById('showRandomQuoteBtn');
+    if (showQuoteBtn) {
+        showQuoteBtn.addEventListener('click', newQuote);
+    } else {
+        console.error('Show Random Quote button not found!');
+    }
+    const exportBtn = document.getElementById('exportQuotesBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportQuotesAsJSON);
+    } else {
+        console.error('Export Quotes button not found!');
+    }
+});
+function importFromJsonFile(event) {
+    const fileReader = new FileReader();
+    fileReader.onload = function(event) {
+      const importedQuotes = JSON.parse(event.target.result);
+      quotes.push(...importedQuotes);
+      saveQuotes();
+      alert('Quotes imported successfully!');
+    };
+    fileReader.readAsText(event.target.files[0]);
+  }
