@@ -14,7 +14,74 @@ function saveQuotes(quotes) {
 
 
 let quotes = getQuotes();
+function getUniqueCategories() {
+    const categories = quotes.map(quote => quote.category);
+    return [...new Set(categories)];
+}
+function populateCategories() {
+    const categories = getUniqueCategories();
+    const categoryDropdown = document.getElementById('categoryFilter');
 
+    categoryDropdown.innerHTML = '';
+
+    const allOption = document.createElement('option');
+    allOption.value = '';
+    allOption.textContent = 'All';
+    categoryDropdown.appendChild(allOption);
+
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categoryDropdown.appendChild(option);
+    });
+
+    const lastSelectedCategory = localStorage.getItem('selectedCategory');
+    if (lastSelectedCategory) {
+        categoryDropdown.value = lastSelectedCategory;
+        filterQuotes(lastSelectedCategory);
+    }
+}
+function filterQuotes(category) {
+    const quoteElement = document.getElementById('dynamicContent');
+    quoteElement.innerHTML = ''; 
+
+    const filteredQuotes = category ? quotes.filter(quote => quote.category === category) : quotes;
+
+    filteredQuotes.forEach(quote => {
+        const blockquote = document.createElement('blockquote');
+        blockquote.textContent = `"${quote.text}"`;
+
+        const categoryParagraph = document.createElement('p');
+        categoryParagraph.textContent = `Category: ${quote.category}`;
+
+        quoteElement.appendChild(blockquote);
+        quoteElement.appendChild(categoryParagraph);
+    });
+}
+
+function saveSelectedCategory(category) {
+    localStorage.setItem('selectedCategory', category);
+}
+
+function handleCategoryChange(event) {
+    const selectedCategory = event.target.value;
+
+    filterQuotes(selectedCategory);
+
+    saveSelectedCategory(selectedCategory);
+}
+function addQuote(quoteText, quoteCategory) {
+    
+    quotes.push({ text: quoteText, category: quoteCategory });
+
+    saveQuotes(quotes);
+
+    if (!getUniqueCategories().includes (quoteCategory)){
+        populateCategories ();
+    }
+    alert ('Quote added succefully');
+}
 
 function showRandomQuote() {
     const randomIndex = Math.floor(Math.random() * quotes.length);
