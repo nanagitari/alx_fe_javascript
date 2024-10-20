@@ -219,3 +219,158 @@ function importFromJsonFile(event) {
     };
     fileReader.readAsText(event.target.files[0]);
   }
+
+function fetchQuotesFromServer() {
+    fetch('https://jsonplaceholder.typicode.com/posts?_limit=5') 
+        .then(response => response.json())
+        .then(data => {
+            const serverQuotes = data.map(post => ({
+                text: post.title,
+                category: "Server" 
+            }));
+            quotes = [...quotes, ...serverQuotes];
+            
+            saveQuotes(quotes);
+            populateCategories();
+        })
+        .catch(error => console.error('Error fetching quotes:', error));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetchQuotesFromServer();
+
+});
+function postQuoteToServer(quoteText, quoteCategory) {
+    const newQuote = {
+        title: quoteText, 
+        body: quoteCategory,
+        userId: 1 
+    };
+
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        body: JSON.stringify(newQuote),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Quote successfully posted:', data);
+    })
+    .catch(error => console.error('Error posting quote:', error));
+}
+
+function addQuote(quoteText, quoteCategory) {
+    
+    quotes.push({ text: quoteText, category: quoteCategory });
+
+    saveQuotes(quotes);
+
+    if (!getUniqueCategories().includes(quoteCategory)) {
+        populateCategories();
+    }
+
+    postQuoteToServer(quoteText, quoteCategory);
+
+    alert('Quote added successfully!');
+}
+
+function startPollingForUpdates() {
+    setInterval(fetchQuotesFromServer, 30000); 
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetchQuotesFromServer(); 
+    startPollingForUpdates();
+
+});
+
+function fetchAndSyncQuotes() {
+    fetch('https://jsonplaceholder.typicode.com/posts?_limit=5') 
+        .then(response => response.json())
+        .then(serverData => {
+            
+            const serverQuotes = serverData.map(post => ({
+                text: post.title,
+                category: "Server"
+            }));
+            syncQuotes(serverQuotes);
+        })
+        .catch(error => console.error('Error fetching quotes:', error));
+}
+
+function syncQuotes(serverQuotes) {
+    const updatedQuotes = [];
+
+    const serverQuotesMap = new Map(serverQuotes.map(q => [q.text, q]));
+
+    quotes.forEach(localQuote => {
+        const serverQuote = serverQuotesMap.get(localQuote.text);
+        if (serverQuote) {
+            updatedQuotes.push(serverQuote);
+            serverQuotesMap.delete(localQuote.text); 
+        } else {
+            updatedQuotes.push(localQuote);
+        }
+    });
+
+    serverQuotesMap.forEach(serverQuote => updatedQuotes.push(serverQuote));
+
+    quotes = updatedQuotes;
+    saveQuotes(quotes);
+    populateCategories(); 
+}
+
+function startPollingForUpdates() {
+    setInterval(fetchAndSyncQuotes, 30000); 
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetchAndSyncQuotes(); 
+    startPollingForUpdates(); 
+});
+function handleConflicts(conflictQuotes) {
+    
+    showNotification("Conflicts detected. Please resolve the conflicts below.");
+
+    const conflictResolutionArea = document.getElementById('conflictResolutionArea');
+    conflictResolutionArea.innerHTML = ''; 
+
+    conflictQuotes.forEach(({ local, server }) => {
+        const conflictDiv = document.createElement('div');
+        conflictDiv.style.marginBottom = '10px';
+        conflictDiv.innerHTML = `
+            <p><strong>Conflict for quote:</strong></p>
+            <blockquote>${local.text}</blockquote>
+            <p>Local Category: ${local.category}</p>
+            <p>Server Category: ${server.category}</p>
+            <button onclick="resolveConflict('${local.text}', 'local')">Keep Local</button>
+            <button onclick="resolveConflict('${local.text}', 'server')">Keep Server</button>
+        `;
+        conflictResolutionArea.appendChild(conflictDiv);
+    });
+
+    conflictResolutionArea.style.display = 'block'; 
+}
+
+function resolveConflict(quoteText, choice) {
+    const conflictResolutionArea = document.getElementById('conflictResolutionArea');
+    conflictResolutionArea.style.display = 'none'; 
+
+    const conflictQuote = quotes.find(quote => quote.text === quoteText);
+    if (choice === 'local') {
+        showNotification(`Kept local version for: "${quoteText}".`);
+    } else {
+        
+        const serverQuote = quotes.find(quote => quote.text === quoteText && quote.category === "Server");
+        if (serverQuote) {
+            conflictQuote.category = serverQuote.category; 
+            showNotification(`Updated to server version for: "${quoteText}".`);
+        }
+    }
+
+    saveQuotes(quotes);
+    populateCategories(); 
+}
+
